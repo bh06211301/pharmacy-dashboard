@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>藥局輿情追蹤儀表板 - 公開版</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0891b2;
+            --primary-dark: #0e7490;
+            --accent: #f97316;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(8,145,178,0.1) 0%, rgba(249,115,22,0.05) 100%);
+            border: 1px solid rgba(8,145,178,0.2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .setup-panel {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .setup-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setup-step {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            margin-right: 12px;
+        }
+
+        .step-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .step-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-left: 44px;
+        }
+
+        .input-group {
+            margin-top: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: 'Noto Sans TC', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(8,145,178,0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: 'Noto Sans TC', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(8,145,178,0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+        }
+
+        .alert-success {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(8,145,178,0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 30px rgba(8,145,178,0.2);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .controls {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.6s ease-out 0.3s both;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .control-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pharmacy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .pharmacy-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pharmacy-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease-out both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pharmacy-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .pharmacy-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 40px rgba(8,145,178,0.2);
+        }
+
+        .pharmacy-card:hover::before {
+            opacity: 1;
+        }
+
+        .pharmacy-card.priority-high {
+            border-color: var(--danger);
+        }
+
+        .pharmacy-card.priority-medium {
+            border-color: var(--warning);
+        }
+
+        .pharmacy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .pharmacy-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .pharmacy-location {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .priority-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        .priority-badge.high {
+            background: rgba(239,68,68,0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .priority-badge.medium {
+            background: rgba(245,158,11,0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .priority-badge.low {
+            background: rgba(148,163,184,0.2);
+            color: var(--text-muted);
+            border: 1px solid var(--text-muted);
+        }
+
+        .pharmacy-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+            padding: 16px;
+            background: rgba(8,145,178,0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(8,145,178,0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-item-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .signals {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .signal-tag {
+            padding: 6px 12px;
+            background: rgba(8,145,178,0.15);
+            border: 1px solid rgba(8,145,178,0.3);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .signal-tag.highlight {
+            background: rgba(249,115,22,0.2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .reviews-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .reviews-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .reviews-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .toggle-reviews {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-reviews:hover {
+            background: rgba(8,145,178,0.1);
+        }
+
+        .review-item {
+            padding: 12px;
+            background: rgba(15,23,42,0.5);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .review-rating {
+            display: flex;
+            gap: 2px;
+        }
+
+        .review-time {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .review-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15,23,42,0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .code-block {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--primary);
+            overflow-x: auto;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .help-text {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .help-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .help-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        // 從 Google Sheets 公開 CSV 載入資料
+        async function loadFromPublicSheet(spreadsheetId, sheetName) {
+            // Google Sheets CSV 匯出 URL
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+            
+            try {
+                const response = await fetch(csvUrl);
+                if (!response.ok) {
+                    throw new Error('無法讀取資料。請確認 Google Sheets 已設為「知道連結的人都能檢視」');
+                }
+                
+                const csvText = await response.text();
+                return parseCSV(csvText);
+            } catch (error) {
+                console.error('載入資料失敗:', error);
+                throw error;
+            }
+        }
+
+        // 解析 CSV
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) {
+                throw new Error('工作表沒有資料或格式不正確');
+            }
+            
+            // 解析 CSV (處理引號)
+            function parseLine(line) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        if (inQuotes && line[i + 1] === '"') {
+                            current += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current);
+                return result;
+            }
+            
+            const headers = parseLine(lines[0]);
+            const pharmacies = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseLine(lines[i]);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header.trim()] = values[index]?.trim() || '';
+                });
+                
+                const placeId = row.place_id;
+                if (!placeId) continue;
+                
+                const existing = pharmacies.find(p => p.place_id === placeId);
+                const review = {
+                    timestamp: row['留言時間戳(Unix)'] || row['留言時間戳'],
+                    time: row['留言台灣時間'],
+                    rating: parseInt(row['留言評分']) || 0,
+                    text: row['留言內容'] || ''
+                };
+                
+                if (existing) {
+                    existing.reviews.push(review);
+                } else {
+                    pharmacies.push({
+                        place_id: placeId,
+                        name: row['名稱'],
+                        county: row['縣市'],
+                        updateDate: row['更新日期'],
+                        reviews: [review]
+                    });
+                }
+            }
+            
+            return pharmacies;
+        }
+
+        function analyzeSignals(pharmacy) {
+            const signals = [];
+            const reviewCount = pharmacy.reviews.length;
+            const avgRating = pharmacy.reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount;
+            
+            if (reviewCount <= 5) {
+                signals.push({ text: '🏪 全新開幕/高潛力', highlight: true });
+            } else if (reviewCount >= 10) {
+                signals.push({ text: '🚀 短期爆發', highlight: true });
+            }
+            
+            if (avgRating >= 4.5) {
+                signals.push({ text: '⭐ 高評價', highlight: false });
+            } else if (avgRating <= 3) {
+                signals.push({ text: '⚠️ 評價待提升', highlight: false });
+            }
+            
+            const allText = pharmacy.reviews.map(r => r.text).join(' ');
+            if (allText.includes('藥師') && (allText.includes('專業') || allText.includes('親切') || allText.includes('好'))) {
+                signals.push({ text: '👤 藥師好評', highlight: true });
+            }
+            if (allText.includes('新開') || allText.includes('開幕') || allText.includes('剛開')) {
+                signals.push({ text: '🎉 新開幕', highlight: true });
+            }
+            if (allText.includes('缺貨') || allText.includes('沒有') || allText.includes('找不到')) {
+                signals.push({ text: '📦 缺貨需求', highlight: false });
+            }
+            if (allText.includes('優惠') || allText.includes('活動') || allText.includes('特價')) {
+                signals.push({ text: '🏷️ 促銷活動', highlight: false });
+            }
+            
+            return signals;
+        }
+
+        function calculatePriority(signals, reviewCount, avgRating) {
+            const highlightCount = signals.filter(s => s.highlight).length;
+            
+            if (highlightCount >= 2 || (reviewCount <= 5 && avgRating >= 4)) {
+                return 'high';
+            } else if (highlightCount >= 1 || reviewCount >= 10) {
+                return 'medium';
+            }
+            return 'low';
+        }
+
+        function PharmacyCard({ pharmacy, expanded, onToggle }) {
+            const avgRating = pharmacy.reviews.reduce((sum, r) => sum + r.rating, 0) / pharmacy.reviews.length;
+            const signals = analyzeSignals(pharmacy);
+            const priority = calculatePriority(signals, pharmacy.reviews.length, avgRating);
+            
+            const priorityLabels = {
+                high: '高優先',
+                medium: '中優先',
+                low: '低優先'
+            };
+            
+            return (
+                <div className={`pharmacy-card priority-${priority}`}>
+                    <div className="pharmacy-header">
+                        <div>
+                            <div className="pharmacy-name">{pharmacy.name}</div>
+                            <div className="pharmacy-location">
+                                📍 {pharmacy.county}
+                            </div>
+                        </div>
+                        <div className={`priority-badge ${priority}`}>
+                            {priorityLabels[priority]}
+                        </div>
+                    </div>
+                    
+                    <div className="pharmacy-stats">
+                        <div className="stat-item">
+                            <div className="stat-item-label">評論數</div>
+                            <div className="stat-item-value">{pharmacy.reviews.length}</div>
+                        </div>
+                        <div className="stat-item">
+                            <div className="stat-item-label">平均評分</div>
+                            <div className="stat-item-value">{avgRating.toFixed(1)}</div>
+                        </div>
+                        <div className="stat-item">
+                            <div className="stat-item-label">最新</div>
+                            <div className="stat-item-value" style={{fontSize: '0.9rem'}}>
+                                {pharmacy.updateDate}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {signals.length > 0 && (
+                        <div className="signals">
+                            {signals.map((signal, idx) => (
+                                <span 
+                                    key={idx} 
+                                    className={`signal-tag ${signal.highlight ? 'highlight' : ''}`}
+                                >
+                                    {signal.text}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                    
+                    <div className="reviews-section">
+                        <div className="reviews-header">
+                            <div className="reviews-title">
+                                最新評論 ({pharmacy.reviews.length})
+                            </div>
+                            <button 
+                                className="toggle-reviews"
+                                onClick={() => onToggle(pharmacy.place_id)}
+                            >
+                                {expanded ? '收起 ▲' : '展開 ▼'}
+                            </button>
+                        </div>
+                        
+                        {expanded && (
+                            <div>
+                                {pharmacy.reviews.slice(0, 5).map((review, idx) => (
+                                    <div key={idx} className="review-item">
+                                        <div className="review-header">
+                                            <div className="review-rating">
+                                                {'⭐'.repeat(review.rating)}
+                                            </div>
+                                            <div className="review-time">{review.time}</div>
+                                        </div>
+                                        <div className="review-text">{review.text}</div>
+                                    </div>
+                                ))}
+                                {pharmacy.reviews.length > 5 && (
+                                    <div style={{textAlign: 'center', marginTop: '12px', color: 'var(--text-muted)', fontSize: '0.875rem'}}>
+                                        還有 {pharmacy.reviews.length - 5} 則評論...
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        function Dashboard() {
+            const [pharmacies, setPharmacies] = useState([]);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [countyFilter, setCountyFilter] = useState('all');
+            const [priorityFilter, setPriorityFilter] = useState('all');
+            const [sortBy, setSortBy] = useState('priority');
+            const [expandedCards, setExpandedCards] = useState(new Set());
+            
+            const [spreadsheetId, setSpreadsheetId] = useState('');
+            const [sheetName, setSheetName] = useState('留言紀錄');
+            const [isConfigured, setIsConfigured] = useState(false);
+            const [isLoading, setIsLoading] = useState(false);
+            const [error, setError] = useState('');
+            const [success, setSuccess] = useState('');
+
+            useEffect(() => {
+                const savedSpreadsheetId = localStorage.getItem('public_spreadsheet_id');
+                const savedSheetName = localStorage.getItem('public_sheet_name');
+                
+                if (savedSpreadsheetId) {
+                    setSpreadsheetId(savedSpreadsheetId);
+                    setSheetName(savedSheetName || '留言紀錄');
+                    setIsConfigured(true);
+                    loadData(savedSpreadsheetId, savedSheetName || '留言紀錄');
+                }
+            }, []);
+
+            async function loadData(id, name) {
+                setIsLoading(true);
+                setError('');
+                setSuccess('');
+                
+                try {
+                    const data = await loadFromPublicSheet(id, name);
+                    setPharmacies(data);
+                    setSuccess(`✅ 成功載入 ${data.length} 間藥局的資料!`);
+                    setTimeout(() => setSuccess(''), 5000);
+                } catch (err) {
+                    setError(err.message);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+
+            function handleSaveConfig() {
+                if (!spreadsheetId.trim()) {
+                    setError('請填寫 Spreadsheet ID');
+                    return;
+                }
+                
+                localStorage.setItem('public_spreadsheet_id', spreadsheetId);
+                localStorage.setItem('public_sheet_name', sheetName);
+                
+                setIsConfigured(true);
+                loadData(spreadsheetId, sheetName);
+            }
+
+            function handleRefresh() {
+                loadData(spreadsheetId, sheetName);
+            }
+
+            function handleReconfigure() {
+                setIsConfigured(false);
+                setPharmacies([]);
+            }
+
+            const counties = useMemo(() => {
+                const uniqueCounties = [...new Set(pharmacies.map(p => p.county))];
+                return uniqueCounties.sort();
+            }, [pharmacies]);
+
+            const filteredPharmacies = useMemo(() => {
+                let filtered = pharmacies.filter(pharmacy => {
+                    const searchLower = searchTerm.toLowerCase();
+                    const matchSearch = !searchTerm || 
+                        pharmacy.name.toLowerCase().includes(searchLower) ||
+                        pharmacy.county.toLowerCase().includes(searchLower) ||
+                        pharmacy.reviews.some(r => r.text.toLowerCase().includes(searchLower));
+                    
+                    const matchCounty = countyFilter === 'all' || pharmacy.county === countyFilter;
+                    
+                    let matchPriority = true;
+                    if (priorityFilter !== 'all') {
+                        const signals = analyzeSignals(pharmacy);
+                        const avgRating = pharmacy.reviews.reduce((sum, r) => sum + r.rating, 0) / pharmacy.reviews.length;
+                        const priority = calculatePriority(signals, pharmacy.reviews.length, avgRating);
+                        matchPriority = priority === priorityFilter;
+                    }
+                    
+                    return matchSearch && matchCounty && matchPriority;
+                });
+
+                filtered.sort((a, b) => {
+                    const aSignals = analyzeSignals(a);
+                    const bSignals = analyzeSignals(b);
+                    const aAvgRating = a.reviews.reduce((sum, r) => sum + r.rating, 0) / a.reviews.length;
+                    const bAvgRating = b.reviews.reduce((sum, r) => sum + r.rating, 0) / b.reviews.length;
+                    const aPriority = calculatePriority(aSignals, a.reviews.length, aAvgRating);
+                    const bPriority = calculatePriority(bSignals, b.reviews.length, bAvgRating);
+                    
+                    if (sortBy === 'priority') {
+                        const priorityOrder = { high: 0, medium: 1, low: 2 };
+                        return priorityOrder[aPriority] - priorityOrder[bPriority];
+                    } else if (sortBy === 'reviews') {
+                        return b.reviews.length - a.reviews.length;
+                    } else if (sortBy === 'rating') {
+                        return bAvgRating - aAvgRating;
+                    }
+                    return 0;
+                });
+
+                return filtered;
+            }, [pharmacies, searchTerm, countyFilter, priorityFilter, sortBy]);
+
+            const stats = useMemo(() => {
+                const total = filteredPharmacies.length;
+                const high = filteredPharmacies.filter(p => {
+                    const signals = analyzeSignals(p);
+                    const avgRating = p.reviews.reduce((sum, r) => sum + r.rating, 0) / p.reviews.length;
+                    return calculatePriority(signals, p.reviews.length, avgRating) === 'high';
+                }).length;
+                const totalReviews = filteredPharmacies.reduce((sum, p) => sum + p.reviews.length, 0);
+                const avgRating = filteredPharmacies.length > 0
+                    ? filteredPharmacies.reduce((sum, p) => {
+                        const avg = p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length;
+                        return sum + avg;
+                    }, 0) / filteredPharmacies.length
+                    : 0;
+                
+                return { total, high, totalReviews, avgRating };
+            }, [filteredPharmacies]);
+
+            const toggleCard = (placeId) => {
+                setExpandedCards(prev => {
+                    const newSet = new Set(prev);
+                    if (newSet.has(placeId)) {
+                        newSet.delete(placeId);
+                    } else {
+                        newSet.add(placeId);
+                    }
+                    return newSet;
+                });
+            };
+
+            if (isLoading) {
+                return (
+                    <div className="loading-overlay">
+                        <div className="loading-content">
+                            <div className="spinner"></div>
+                            <div className="loading-text">正在載入資料...</div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (!isConfigured) {
+                return (
+                    <div className="container">
+                        <div className="header">
+                            <h1>🏥 藥局輿情追蹤儀表板</h1>
+                            <div className="header-subtitle">
+                                即時監控藥局評論 · 智能分析拜訪優先順序
+                            </div>
+                        </div>
+
+                        <div className="setup-panel">
+                            <div className="setup-title">
+                                🔗 首次設定 - 超簡單!只需 2 步驟
+                            </div>
+
+                            <div className="setup-step">
+                                <div className="step-title">
+                                    <span className="step-number">1</span>
+                                    將 Google Sheets 設為公開分享
+                                </div>
+                                <div className="step-content">
+                                    <p>1. 開啟你的 Google Sheets</p>
+                                    <p>2. 點右上角「<strong>共用</strong>」按鈕</p>
+                                    <p>3. 點「<strong>一般存取權</strong>」→ 改成「<strong>知道連結的人</strong>」</p>
+                                    <p>4. 權限設為「<strong>檢視者</strong>」</p>
+                                    <p>5. 按「<strong>完成</strong>」</p>
+                                    <div className="alert alert-info" style={{marginTop: '15px'}}>
+                                        💡 別擔心!只有知道連結的人才能看到,不會公開在網路上
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="setup-step">
+                                <div className="step-title">
+                                    <span className="step-number">2</span>
+                                    輸入 Spreadsheet ID
+                                </div>
+                                <div className="step-content">
+                                    <p>從你的 Google Sheets 網址中複製 ID:</p>
+                                    <div className="code-block">
+                                        https://docs.google.com/spreadsheets/d/<strong>這段就是ID</strong>/edit
+                                    </div>
+                                    <div className="input-group">
+                                        <label>Spreadsheet ID</label>
+                                        <input 
+                                            type="text"
+                                            placeholder="例如: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+                                            value={spreadsheetId}
+                                            onChange={(e) => setSpreadsheetId(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="input-group">
+                                        <label>工作表名稱</label>
+                                        <input 
+                                            type="text"
+                                            placeholder="留言紀錄"
+                                            value={sheetName}
+                                            onChange={(e) => setSheetName(e.target.value)}
+                                        />
+                                        <div className="help-text">
+                                            💡 通常是「留言紀錄」,請確認你的分頁名稱
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {error && (
+                                <div className="alert alert-error">
+                                    ⚠️ {error}
+                                </div>
+                            )}
+
+                            <button className="btn" onClick={handleSaveConfig} style={{marginTop: '20px'}}>
+                                🚀 開始使用(零 API 消耗)
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>🏥 藥局輿情追蹤儀表板</h1>
+                        <div className="header-subtitle">
+                            即時監控藥局評論 · 智能分析拜訪優先順序
+                            <button 
+                                className="btn" 
+                                onClick={handleRefresh}
+                                style={{marginLeft: '15px', padding: '8px 16px', fontSize: '0.85rem'}}
+                            >
+                                🔄 重新載入
+                            </button>
+                            <button 
+                                className="btn" 
+                                onClick={handleReconfigure}
+                                style={{marginLeft: '10px', padding: '8px 16px', fontSize: '0.85rem', background: 'var(--bg-hover)'}}
+                            >
+                                ⚙️ 重新設定
+                            </button>
+                        </div>
+                    </div>
+
+                    {success && (
+                        <div className="alert alert-success">
+                            {success}
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="alert alert-error">
+                            ⚠️ {error}
+                        </div>
+                    )}
+
+                    <div className="stats-bar">
+                        <div className="stat-card">
+                            <div className="stat-label">總藥局數</div>
+                            <div className="stat-value">{stats.total}</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-label">🔥 高優先</div>
+                            <div className="stat-value" style={{color: 'var(--danger)'}}>{stats.high}</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-label">總評論數</div>
+                            <div className="stat-value">{stats.totalReviews}</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-label">平均評分</div>
+                            <div className="stat-value">{stats.avgRating.toFixed(1)} ⭐</div>
+                        </div>
+                    </div>
+
+                    <div className="controls">
+                        <div className="control-row">
+                            <div className="input-group">
+                                <label>🔍 搜尋</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="藥局名稱、地址或評論內容..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            
+                            <div className="input-group">
+                                <label>📍 縣市</label>
+                                <select value={countyFilter} onChange={(e) => setCountyFilter(e.target.value)}>
+                                    <option value="all">全部縣市</option>
+                                    {counties.map(county => (
+                                        <option key={county} value={county}>{county}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            
+                            <div className="input-group">
+                                <label>🎯 優先等級</label>
+                                <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}>
+                                    <option value="all">全部等級</option>
+                                    <option value="high">🔥 高優先</option>
+                                    <option value="medium">📋 中優先</option>
+                                    <option value="low">📌 低優先</option>
+                                </select>
+                            </div>
+                            
+                            <div className="input-group">
+                                <label>📊 排序</label>
+                                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                                    <option value="priority">優先等級</option>
+                                    <option value="reviews">評論數量</option>
+                                    <option value="rating">平均評分</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {filteredPharmacies.length === 0 ? (
+                        <div style={{textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)'}}>
+                            <div style={{fontSize: '4rem', marginBottom: '20px', opacity: 0.5}}>🔍</div>
+                            <div style={{fontSize: '1.1rem', marginBottom: '10px'}}>找不到符合條件的藥局</div>
+                            <div style={{fontSize: '0.9rem'}}>試試調整搜尋或篩選條件</div>
+                        </div>
+                    ) : (
+                        <div className="pharmacy-grid">
+                            {filteredPharmacies.map(pharmacy => (
+                                <PharmacyCard 
+                                    key={pharmacy.place_id}
+                                    pharmacy={pharmacy}
+                                    expanded={expandedCards.has(pharmacy.place_id)}
+                                    onToggle={toggleCard}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<Dashboard />, document.getElementById('root'));
+    </script>
+</body>
+</html>
